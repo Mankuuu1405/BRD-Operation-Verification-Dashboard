@@ -12,6 +12,7 @@ import Sidebar from '../components/Common/Sidebar';
 const OperationsDashboard = ({ user, onLogout = () => {} }) => {
   const [selectedView, setSelectedView] = useState('dashboard');
   const [selectedVisit, setSelectedVisit] = useState(null);
+
   const metrics = [
     {
       title: 'Pending Tasks',
@@ -137,19 +138,31 @@ const OperationsDashboard = ({ user, onLogout = () => {} }) => {
 
   return (
     <div className="flex">
-      <Sidebar selectedView={selectedView} onSelect={setSelectedView} />
+      <Sidebar
+        selectedView={selectedView}
+        onSelect={setSelectedView}
+        userEmail={user?.email || ''}
+        onLogout={onLogout}
+      />
 
-      <main className="flex-1 min-h-screen bg-gray-50 ml-0 md:ml-64 mt-16 md:mt-0">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b border-gray-200">
+      <main className="flex-1 min-h-screen bg-gray-50 ml-0 lg:ml-64 mt-14 lg:mt-0">
+
+        {/* ─── Desktop Header only ─────────────────────────────── */}
+        <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
+
+              {/* Left: Title — always visible on desktop */}
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Operations Dashboard</h1>
                 <p className="mt-1 text-sm text-gray-500">Verification & KYC Management</p>
               </div>
+
+              {/* Right: Welcome + Logout — desktop only */}
               <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600">Welcome, <span className="font-semibold">{user.name}</span></span>
+                <span className="text-sm text-gray-600">
+                  Welcome, <span className="font-semibold">{user?.name}</span>
+                </span>
                 <button
                   onClick={() => { setSelectedView('dashboard'); onLogout(); }}
                   className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
@@ -157,16 +170,16 @@ const OperationsDashboard = ({ user, onLogout = () => {} }) => {
                   Logout
                 </button>
               </div>
+
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
+        {/* ─── Main Content ─────────────────────────────────────── */}
         <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
           {selectedView === 'dashboard' && (
             <>
               <DashboardMetrics metrics={metrics} />
-
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                   <TaskList tasks={tasks} />
