@@ -145,13 +145,21 @@ const OperationsDashboard = ({ user, onLogout = () => {} }) => {
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="flex">
-      <Sidebar selectedView={selectedView} onSelect={setSelectedView} />
+      <Sidebar
+        selectedView={selectedView}
+        onSelect={setSelectedView}
+        userEmail={user?.email || ''}
+        onLogout={onLogout}
+      />
 
-      <main className="flex-1 min-h-screen bg-gray-50 ml-0 md:ml-64 mt-16 md:mt-0">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b border-gray-200">
+      <main className="flex-1 min-h-screen bg-gray-50 ml-0 lg:ml-64 mt-14 lg:mt-0">
+
+        {/* ─── Desktop Header only ─────────────────────────────── */}
+        <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
+
+              {/* Left: Title — always visible on desktop */}
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
                   Operations Dashboard
@@ -160,6 +168,8 @@ const OperationsDashboard = ({ user, onLogout = () => {} }) => {
                   Verification & KYC Management
                 </p>
               </div>
+
+              {/* Right: Welcome + Logout — desktop only */}
               <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-600">
                   Welcome,{" "}
@@ -175,11 +185,12 @@ const OperationsDashboard = ({ user, onLogout = () => {} }) => {
                   Logout
                 </button>
               </div>
+
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
+        {/* ─── Main Content ─────────────────────────────────────── */}
         <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
 
           {/* Loading state */}
