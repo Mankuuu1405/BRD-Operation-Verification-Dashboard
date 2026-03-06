@@ -17,6 +17,7 @@ import {
 import {
   getDashboardSummary,
   getAllTasks,
+  getslaalerts,
 } from "../services/operationdashboardService";
 
 const OperationsDashboard = ({ user, onLogout = () => {} }) => {
@@ -27,6 +28,7 @@ const OperationsDashboard = ({ user, onLogout = () => {} }) => {
   const [tasks, setTasks] = useState([]);
   const [siteVisits, setSiteVisits] = useState([]);
   const [rejections, setRejections] = useState([]);
+  const [slaAlerts, setSlaAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -64,63 +66,59 @@ const OperationsDashboard = ({ user, onLogout = () => {} }) => {
       ]
     : [];
 
-  // ─── Static data ───────────────────────────────────────────────────────────
-  const slaAlerts = [
-    {
-      id: "ALERT-001",
-      taskId: "TASK-0987",
-      severity: "critical",
-      message: "KYC verification pending for 26 hours",
-      slaTarget: 24,
-      elapsed: 26,
-      overdue: 2,
-    },
-    {
-      id: "ALERT-002",
-      taskId: "TASK-0954",
-      severity: "high",
-      message: "Document OCR retry limit approaching",
-      slaTarget: 12,
-      elapsed: 14,
-      overdue: 2,
-    },
-    {
-      id: "ALERT-003",
-      taskId: "TASK-0921",
-      severity: "medium",
-      message: "Site visit report submission overdue",
-      slaTarget: 48,
-      elapsed: 50,
-      overdue: 2,
-    },
-  ];
-
   // ─── Fetch all data on mount ───────────────────────────────────────────────
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
       setError(null);
-      try {
-        const [summaryData, tasksData, visitsData, rejectionsData] =
-          await Promise.all([
-            getDashboardSummary(),
-            getAllTasks(),
-            getAllSiteVisits(),
-            getAllRejected(),
-          ]);
 
+      const results = await Promise.allSettled([
+        getDashboardSummary(),
+        getAllTasks(),
+        getAllSiteVisits(),
+        getAllRejected(),
+        getslaalerts(),
+      ]);
+
+      const [summaryRes, tasksRes, visitsRes, rejectionsRes, slaRes] = results;
+
+      if (summaryRes.status === "fulfilled") {
         setDashboardSummary(
-          Array.isArray(summaryData) ? summaryData[0] : summaryData
+          Array.isArray(summaryRes.value)
+            ? summaryRes.value[0]
+            : summaryRes.value
         );
-        setTasks(Array.isArray(tasksData) ? tasksData : []);
-        setSiteVisits(Array.isArray(visitsData) ? visitsData : []);
-        setRejections(Array.isArray(rejectionsData) ? rejectionsData : []);
-      } catch (err) {
-        console.error("Failed to fetch dashboard data:", err);
-        setError("Failed to load dashboard data. Please try again.");
-      } finally {
-        setLoading(false);
       }
+      setTasks(
+        tasksRes.status === "fulfilled" && Array.isArray(tasksRes.value)
+          ? tasksRes.value
+          : []
+      );
+      setSiteVisits(
+        visitsRes.status === "fulfilled" && Array.isArray(visitsRes.value)
+          ? visitsRes.value
+          : []
+      );
+      setRejections(
+        rejectionsRes.status === "fulfilled" && Array.isArray(rejectionsRes.value)
+          ? rejectionsRes.value
+          : []
+      );
+      setSlaAlerts(
+        slaRes.status === "fulfilled" && Array.isArray(slaRes.value)
+          ? slaRes.value
+          : []
+      );
+
+      // Show error only if ALL critical requests failed
+      if (
+        summaryRes.status === "rejected" &&
+        tasksRes.status === "rejected"
+      ) {
+        setError("Failed to load dashboard data. Please try again.");
+      }
+
+      setLoading(false);
     };
 
     fetchDashboardData();
@@ -148,18 +146,16 @@ const OperationsDashboard = ({ user, onLogout = () => {} }) => {
       <Sidebar
         selectedView={selectedView}
         onSelect={setSelectedView}
-        userEmail={user?.email || ''}
+        userEmail={user?.email || ""}
         onLogout={onLogout}
       />
 
       <main className="flex-1 min-h-screen bg-gray-50 ml-0 lg:ml-64 mt-14 lg:mt-0">
 
-        {/* ─── Desktop Header only ─────────────────────────────── */}
+        {/* ─── Desktop Header ───────────────────────────────────── */}
         <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
-
-              {/* Left: Title — always visible on desktop */}
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
                   Operations Dashboard
@@ -168,8 +164,6 @@ const OperationsDashboard = ({ user, onLogout = () => {} }) => {
                   Verification & KYC Management
                 </p>
               </div>
-
-              {/* Right: Welcome + Logout — desktop only */}
               <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-600">
                   Welcome,{" "}
@@ -185,7 +179,6 @@ const OperationsDashboard = ({ user, onLogout = () => {} }) => {
                   Logout
                 </button>
               </div>
-
             </div>
           </div>
         </div>

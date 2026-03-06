@@ -72,3 +72,33 @@ export const deleteTask = async (id) => {
   const response = await dashboardAPI.delete(`/tasks/${id}/`);
   return response.data;
 };
+
+// ================================
+// 📌SLA API
+// ================================
+
+
+export const getslaalerts = async () => {
+  const response = await dashboardAPI.get("/slaalerts/");
+  return response.data;
+};
+
+export const getsslaalerts = async (id) => {
+  const response = await dashboardAPI.get(`/slaalerts/${id}/`);
+  return response.data;
+};
+
+export const createslaalerts = async (data) => {
+  const response = await dashboardAPI.post("/slaalerts/", data);
+  return response.data;
+};
+
+export const updateslaalerts = async (id, data) => {
+  const response = await dashboardAPI.put(`/slaalerts/${id}/`, data);
+  return response.data;
+};
+
+export const deleteslaalerts = async (id) => {
+  const response = await dashboardAPI.delete(`/slaalerts/${id}/`);
+  return response.data;
+};

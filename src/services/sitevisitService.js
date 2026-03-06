@@ -116,7 +116,11 @@ export const deleteRecommendation = (id) =>
 // ─── Rejected Documents ───────────────────────────────────────────────────────
 // matches urls.py: router.register(r"rejected", RejectedViewSet)
 
-export const getAllRejected = () => request("/rejected/");
+
+export const getAllRejected = async () => {
+  const response = await siteVisitAPI.get("/rejections/");  
+  return response.data;
+};
 
 export const getRejected = (id) => request(`/rejected/${id}/`);
 
